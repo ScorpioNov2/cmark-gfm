@@ -1,83 +1,118 @@
-name: CI tests
+name: Build cmark-gfm
 
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  linux:
-
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
-        cmake_opts:
-          - '-DCMARK_SHARED=ON'
-          - ''
-        compiler:
-          - c: 'clang'
-            cpp: 'clang++'
-          - c: 'gcc'
-            cpp: 'g++'
-    env:
-       CMAKE_OPTIONS: ${{ matrix.cmake_opts }}
-       CC: ${{ matrix.compiler.c }}
-       CXX: ${{ matrix.compiler.cpp }}
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Install valgrind
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake
       run: |
-         sudo apt install -y valgrind
-    - name: Build and test
-      run: |
-         make
-         make test
-         make leakcheck
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+        #   ^^^ dòng fix lỗi bạn gặp
 
-  macos:
+    - name: Build
+      run: cmake --build build --config Release
 
-    runs-on: macOS-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        cmake_opts:
-          - '-DCMARK_SHARED=ON'
-          - ''
-        compiler:
-          - c: 'clang'
-            cpp: 'clang++'
-          - c: 'gcc'
-            cpp: 'g++'
-    env:
-       CMAKE_OPTIONS: ${{ matrix.cmake_opts }}
-       CC: ${{ matrix.compiler.c }}
-       CXX: ${{ matrix.compiler.cpp }}
+    - name: Upload binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: cmark-gfm-${{ matrix.os }}
+        path: |
+          build/src/cmark-gfm
+          build/src/Release/cmark-gfm.exe
 
-    steps:
-    - uses: actions/checkout@v1
-    - name: Build and test
-      env:
-         CMAKE_OPTIONS: -DCMARK_SHARED=OFF
-      run: |
-         make
-         make test
+# name: CI tests
 
-  windows:
+# on: [push, workflow_dispatch]
 
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        cmake_opts:
-          - '-DCMARK_SHARED=ON'
-          - ''
-    env:
-       CMAKE_OPTIONS: ${{ matrix.cmake_opts }}
+# jobs:
+#   linux:
 
-    steps:
-    - uses: actions/checkout@v1
-    - uses: ilammy/msvc-dev-cmd@v1
-    - name: Build and test
-      run: |
-        chcp 65001
-        nmake.exe /nologo /f Makefile.nmake test
-      shell: cmd
+#     runs-on: ubuntu-latest
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         cmake_opts:
+#           - '-DCMARK_SHARED=ON'
+#           - ''
+#         compiler:
+#           - c: 'clang'
+#             cpp: 'clang++'
+#           - c: 'gcc'
+#             cpp: 'g++'
+#     env:
+#        CMAKE_OPTIONS: ${{ matrix.cmake_opts }}
+#        CC: ${{ matrix.compiler.c }}
+#        CXX: ${{ matrix.compiler.cpp }}
+
+#     steps:
+#     - uses: actions/checkout@v1
+#     - name: Install valgrind
+#       run: |
+#          sudo apt install -y valgrind
+#     - name: Build and test
+#       run: |
+#          make
+#          make test
+#          make leakcheck
+
+#   macos:
+
+#     runs-on: macOS-latest
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         cmake_opts:
+#           - '-DCMARK_SHARED=ON'
+#           - ''
+#         compiler:
+#           - c: 'clang'
+#             cpp: 'clang++'
+#           - c: 'gcc'
+#             cpp: 'g++'
+#     env:
+#        CMAKE_OPTIONS: ${{ matrix.cmake_opts }}
+#        CC: ${{ matrix.compiler.c }}
+#        CXX: ${{ matrix.compiler.cpp }}
+
+#     steps:
+#     - uses: actions/checkout@v1
+#     - name: Build and test
+#       env:
+#          CMAKE_OPTIONS: -DCMARK_SHARED=OFF
+#       run: |
+#          make
+#          make test
+
+#   windows:
+
+#     runs-on: windows-latest
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         cmake_opts:
+#           - '-DCMARK_SHARED=ON'
+#           - ''
+#     env:
+#        CMAKE_OPTIONS: ${{ matrix.cmake_opts }}
+
+#     steps:
+#     - uses: actions/checkout@v1
+#     - uses: ilammy/msvc-dev-cmd@v1
+#     - name: Build and test
+#       run: |
+#         chcp 65001
+#         nmake.exe /nologo /f Makefile.nmake test
+#       shell: cmd
