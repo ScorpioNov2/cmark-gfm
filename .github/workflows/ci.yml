@@ -72,7 +72,8 @@ jobs:
         name: cmark-gfm-${{ matrix.os }}
         path: |
           build/src/cmark-gfm
-          build/src/Release/markdown.exe
+          build/src/Release/cmark-gfm.exe
+          # build/src/Release/markdown.exe
 
 # name: CI tests
 
