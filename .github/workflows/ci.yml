@@ -30,14 +30,15 @@ jobs:
 
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
+      env:
+        MSYS_NO_PATHCONV: 1
       run: |
         cmake -S . -B build \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
           -DCMARK_SHARED=OFF \
           -DCMARK_GFM_EXTENSIONS_SHARED=OFF \
-          -DCMAKE_C_FLAGS_RELEASE="/MT" \
-          -DCMAKE_C_FLAGS="/w"
+          "-DCMAKE_C_FLAGS=/w /MT"
 
     - name: Build
       run: cmake --build build --config Release
