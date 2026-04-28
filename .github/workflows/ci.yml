@@ -3,7 +3,7 @@ name: Build cmark-gfm
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   build:
