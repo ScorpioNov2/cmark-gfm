@@ -3,12 +3,12 @@ name: Build cmark-gfm
 on:
   workflow_dispatch:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    
+
     defaults:
       run:
         shell: bash
@@ -21,14 +21,39 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configure CMake
+    - name: Configure CMake (Unix)
+      if: matrix.os != 'windows-latest'
       run: |
-        cmake -B build \
+        cmake -S . -B build \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cmake -S . -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+          -DCMARK_SHARED=OFF \
+          -DCMARK_GFM_EXTENSIONS_SHARED=OFF \
+          -DCMAKE_C_FLAGS="/W0 /MT"
+
     - name: Build
       run: cmake --build build --config Release
+
+    - name: Upload binary (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: cmark-gfm-linux
+        path: build/src/cmark-gfm
+
+    - name: Upload binary (macOS)
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: cmark-gfm-macos
+        path: build/src/cmark-gfm
 
     - name: Upload binary
       uses: actions/upload-artifact@v4
