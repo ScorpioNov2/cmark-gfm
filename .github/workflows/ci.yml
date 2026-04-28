@@ -36,7 +36,8 @@ jobs:
           -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
           -DCMARK_SHARED=OFF \
           -DCMARK_GFM_EXTENSIONS_SHARED=OFF \
-          -DCMAKE_C_FLAGS="/W0 /MT"
+          -DCMAKE_C_FLAGS_RELEASE="/MT" \
+          -DCMAKE_C_FLAGS="/w"
 
     - name: Build
       run: cmake --build build --config Release
