@@ -1,0 +1,34 @@
+name: Build cmark-gfm
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+        #   ^^^ dòng fix lỗi bạn gặp
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Upload binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: cmark-gfm-${{ matrix.os }}
+        path: |
+          build/src/cmark-gfm
+          build/src/Release/cmark-gfm.exe
